@@ -2,3 +2,23 @@ node_modules/
 hallpass.db
 *.db
 .env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+dist/
+*.egg-info/
+.pytest_cache/
+
+# Flet
+.dart_tool/
+build/
+
+# Vite / React build output
+frontend_react/node_modules/
+frontend_react/dist/
+

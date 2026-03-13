@@ -1,14 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HallPass — Digital Hall Pass Management</title>
-  <link rel="stylesheet" href="/css/styles.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HallPass</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--primary:#3b82f6;--primary-dark:#1d4ed8;--danger:#ef4444;--success:#22c55e;--bg:#f1f5f9;--card:#ffffff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--radius:8px}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text)}
+.container{max-width:960px;margin:0 auto;padding:0 1rem}
+.navbar{background:var(--primary);color:#fff;padding:.75rem 1rem;display:flex;align-items:center;gap:1rem}
+.navbar h1{font-size:1.25rem;flex:1}
+.navbar span{font-size:.875rem;opacity:.9}
+.btn-logout{background:rgba(255,255,255,.2);border:none;color:#fff;padding:.35rem .75rem;border-radius:var(--radius);cursor:pointer;font-size:.875rem}
+.tabs{display:flex;gap:.25rem;padding:1rem 0 0}
+.tab{background:none;border:none;padding:.5rem 1rem;cursor:pointer;font-size:.9rem;color:var(--muted);border-bottom:2px solid transparent}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem}
+.card h2{font-size:1.1rem;margin-bottom:1rem}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:.875rem;font-weight:500;margin-bottom:.35rem}
+.form-group input,.form-group select{width:100%;padding:.5rem .75rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.9rem}
+.btn{display:inline-block;padding:.5rem 1.25rem;border-radius:var(--radius);border:none;cursor:pointer;font-size:.9rem;font-weight:500}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-success{background:var(--success);color:#fff}
+.btn-sm{padding:.3rem .75rem;font-size:.8rem}
+.alert{padding:.75rem 1rem;border-radius:var(--radius);margin-bottom:1rem;font-size:.9rem}
+.alert-error{background:#fef2f2;color:var(--danger);border:1px solid #fecaca}
+table{width:100%;border-collapse:collapse;font-size:.875rem}
+th{text-align:left;padding:.5rem .75rem;background:var(--bg);border-bottom:2px solid var(--border);font-weight:600}
+td{padding:.5rem .75rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.badge{display:inline-block;padding:.2rem .5rem;border-radius:999px;font-size:.75rem;font-weight:600}
+.badge-active{background:#dcfce7;color:#15803d}
+.badge-returned{background:#dbeafe;color:#1d4ed8}
+.badge-expired{background:#fee2e2;color:#b91c1c}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;width:100%;max-width:380px}
+.login-card h1{text-align:center;margin-bottom:.25rem}
+.login-card p{text-align:center;color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-bottom:1rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center}
+.stat-card .num{font-size:2rem;font-weight:700;color:var(--primary)}
+.stat-card .lbl{font-size:.8rem;color:var(--muted)}
+#app{padding-top:1.5rem;padding-bottom:2rem}
+</style>
 </head>
 <body>
-  <div id="app"></div>
-  <script src="/js/app.js"></script>
+<div id="login-view" class="login-wrap">
+  <div class="login-card">
+    <h1>🎫 HallPass</h1>
+    <p>Digital Hall Pass Management</p>
+    <div id="login-error" class="alert alert-error" style="display:none"></div>
+    <div class="form-group"><label>Username</label><input id="username" type="text" value="admin" /></div>
+    <div class="form-group"><label>Password</label><input id="password" type="password" value="admin123" /></div>
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+<div id="main-view" style="display:none">
+  <nav class="navbar">
+    <h1>🎫 HallPass</h1>
+    <span id="nav-user"></span>
+    <button class="btn-logout" onclick="doLogout()">Logout</button>
+  </nav>
+  <div class="container" id="app"></div>
+</div>
+<script>
+const API='/api';let token=null,user=null;
+async function api(m,p,b){const h={'Content-Type':'application/json'};if(token)h['Authorization']='Bearer '+token;const r=await fetch(API+p,{method:m,headers:h,body:b?JSON.stringify(b):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Request failed');return d}
+const GET=p=>api('GET',p),POST=(p,b)=>api('POST',p,b),PATCH=(p,b)=>api('PATCH',p,b);
+function doLogin(){const u=document.getElementById('username').value,p=document.getElementById('password').value;POST('/auth/login',{username:u,password:p}).then(d=>{token=d.token;user=d.user;document.getElementById('nav-user').textContent=user.display_name+' ('+user.role+')';document.getElementById('login-view').style.display='none';document.getElementById('main-view').style.display='block';renderDashboard()}).catch(e=>{const el=document.getElementById('login-error');el.textContent=e.message;el.style.display='block'})}
+function doLogout(){token=null;user=null;document.getElementById('login-view').style.display='flex';document.getElementById('main-view').style.display='none'}
+async function renderDashboard(){const app=document.getElementById('app');const stats=await GET('/passes/stats');const active=await GET('/passes/active');app.innerHTML=`<div class="stats-grid"><div class="stat-card"><div class="num">${stats.active_passes}</div><div class="lbl">Active Passes</div></div><div class="stat-card"><div class="num">${stats.passes_today}</div><div class="lbl">Passes Today</div></div></div><div class="card"><h2>Active Passes</h2><table><thead><tr><th>Student</th><th>Location</th><th>Teacher</th><th>Issued</th><th>Actions</th></tr></thead><tbody>${active.map(p=>`<tr><td>${p.student_name}</td><td>${p.location_name}</td><td>${p.teacher_name}</td><td>${p.issued_at.slice(0,16)}</td><td><button class="btn btn-success btn-sm" onclick="doReturn(${p.id})">Return</button> <button class="btn btn-danger btn-sm" onclick="doExpire(${p.id})">Expire</button></td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--muted)">No active passes</td></tr>'}</tbody></table></div><div class="card"><h2>All Locations</h2><table><thead><tr><th>Location</th><th>Current</th><th>Max</th></tr></thead><tbody>${stats.locations.map(l=>`<tr><td>${l.name}</td><td>${l.current_occupancy}</td><td>${l.max_occupancy}</td></tr>`).join('')}</tbody></table></div>`}
+async function doReturn(id){await PATCH('/passes/'+id+'/return',{});renderDashboard()}
+async function doExpire(id){await PATCH('/passes/'+id+'/expire',{});renderDashboard()}
+</script>
 </body>
 </html>
