@@ -1,0 +1,4 @@
+node_modules/
+hallpass.db
+*.db
+.env
