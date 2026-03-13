@@ -241,7 +241,7 @@ async function renderTeacher() {
 
 async function loadTeacherData() {
   const [students, locations, activePasses] = await Promise.all([
-    GET('/admin/users').then(u => u.filter(x => x.role === 'student')).catch(() => []),
+    GET('/users/students'),
     GET('/locations'),
     GET('/passes/active').catch(() => []),
   ]);

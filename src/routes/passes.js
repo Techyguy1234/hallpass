@@ -45,7 +45,12 @@ router.get('/', (req, res) => {
     params.push(student_id);
   }
 
-  query += ' ORDER BY p.issued_at DESC LIMIT 200';
+  query += ' ORDER BY p.issued_at DESC';
+
+  const limit = Math.min(parseInt(req.query.limit, 10) || 50, 500);
+  const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
+  query += ' LIMIT ? OFFSET ?';
+  params.push(limit, offset);
 
   const passes = db.prepare(query).all(...params);
   return res.json(passes);

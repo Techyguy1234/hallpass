@@ -88,6 +88,24 @@ describe('Admin: User Management', () => {
     expect(res.status).toBe(403);
   });
 
+  test('teacher can list students via /api/users/students', async () => {
+    const res = await request(app)
+      .get('/api/users/students')
+      .set('Authorization', `Bearer ${teacherToken}`);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    // Should not expose password_hash
+    expect(res.body[0]).not.toHaveProperty('password_hash');
+  });
+
+  test('student cannot list other students', async () => {
+    // studentToken is available after the first test in this block creates it
+    const res = await request(app)
+      .get('/api/users/students')
+      .set('Authorization', `Bearer ${studentToken}`);
+    expect(res.status).toBe(403);
+  });
+
   test('list all users as admin', async () => {
     const res = await request(app)
       .get('/api/admin/users')
