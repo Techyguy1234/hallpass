@@ -1,0 +1,91 @@
+/* HallPass – global styles */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #3b82f6;
+  --primary-dark: #1d4ed8;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --success: #22c55e;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 8px;
+}
+
+body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+
+.container { max-width: 960px; margin: 0 auto; padding: 0 1rem; }
+
+/* Nav */
+.navbar { background: var(--primary); color: #fff; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 1rem; }
+.navbar h1 { font-size: 1.25rem; flex: 1; }
+.navbar span { font-size: 0.875rem; opacity: 0.9; }
+.btn-logout { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 0.35rem 0.75rem; border-radius: var(--radius); cursor: pointer; font-size: 0.875rem; }
+.btn-logout:hover { background: rgba(255,255,255,0.35); }
+
+/* Tabs */
+.tabs { display: flex; gap: 0.25rem; padding: 1rem 0 0; }
+.tab { background: none; border: none; padding: 0.5rem 1rem; cursor: pointer; font-size: 0.9rem; color: var(--muted); border-bottom: 2px solid transparent; }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+/* Cards */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; }
+.card h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+
+/* Forms */
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.35rem; }
+.form-group input, .form-group select { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; }
+.form-group input:focus, .form-group select:focus { outline: 2px solid var(--primary); border-color: transparent; }
+
+/* Buttons */
+.btn { display: inline-block; padding: 0.5rem 1.25rem; border-radius: var(--radius); border: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #16a34a; }
+.btn-sm { padding: 0.3rem 0.75rem; font-size: 0.8rem; }
+
+/* Alerts */
+.alert { padding: 0.75rem 1rem; border-radius: var(--radius); margin-bottom: 1rem; font-size: 0.9rem; }
+.alert-error { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+.alert-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.alert-hidden { display: none; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+th { text-align: left; padding: 0.5rem 0.75rem; background: var(--bg); border-bottom: 2px solid var(--border); font-weight: 600; }
+td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+
+/* Badges */
+.badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+.badge-active { background: #dcfce7; color: #15803d; }
+.badge-returned { background: #dbeafe; color: #1d4ed8; }
+.badge-expired { background: #fee2e2; color: #b91c1c; }
+
+/* Login */
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+.login-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2.5rem; width: 100%; max-width: 380px; }
+.login-card h1 { text-align: center; margin-bottom: 0.25rem; }
+.login-card p { text-align: center; color: var(--muted); font-size: 0.875rem; margin-bottom: 1.5rem; }
+
+/* Pass card (student) */
+.pass-card { text-align: center; padding: 2rem; }
+.pass-card .location { font-size: 2rem; font-weight: 700; color: var(--primary); }
+.pass-card .timer { font-size: 1.1rem; color: var(--muted); margin: 0.5rem 0 1.5rem; }
+
+/* Stats */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; text-align: center; }
+.stat-card .num { font-size: 2rem; font-weight: 700; color: var(--primary); }
+.stat-card .lbl { font-size: 0.8rem; color: var(--muted); }
+
+/* Spinner */
+.spinner { text-align: center; padding: 2rem; color: var(--muted); }

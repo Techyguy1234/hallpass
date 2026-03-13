@@ -21,22 +21,44 @@
 | JWT-based authentication | ✅ |
 | No external services required | ✅ |
 
-## Getting Started
+---
+
+## Architecture
+
+```
+hallpass/
+├── backend/           ← Python + Flask REST API (all branches)
+├── frontend_react/    ← React frontend  (available on: frontend/react branch)
+├── frontend_flet/     ← Flet  frontend  (available on: frontend/flet  branch)
+├── public/            ← Flask static file serving (populated by React build)
+└── tests/             ← pytest integration tests
+```
+
+Two ready-to-use frontend branches let you pick your preferred UI:
+
+| Branch | Frontend | Language |
+|---|---|---|
+| `frontend/react` | React (Vite, runs in the browser) | JavaScript |
+| `frontend/flet`  | Flet (desktop window **and** browser) | Python |
+
+---
+
+## Quick Start — Python / Flask backend
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) v18+
+- Python 3.10+
 
-### Installation
+### Install & run
 
 ```bash
 git clone https://github.com/Techyguy1234/hallpass.git
 cd hallpass
-npm install
-npm start
+pip install -r backend/requirements.txt
+python -m backend.run
 ```
 
-The server starts at **http://localhost:3000**.
+The API server starts on **http://localhost:5000**.
 
 **Default admin credentials:** `admin` / `admin123`
 > ⚠️ Change the admin password immediately after first login.
@@ -45,36 +67,73 @@ The server starts at **http://localhost:3000**.
 
 | Variable | Default | Description |
 |---|---|---|
-| `PORT` | `3000` | HTTP port |
+| `PORT` | `5000` | HTTP port |
 | `JWT_SECRET` | `hallpass-dev-secret-change-in-production` | JWT signing secret — **must be changed in production** |
 | `DB_PATH` | `./hallpass.db` | Path to the SQLite database file |
 
 Example `.env`:
 ```
-PORT=3000
+PORT=5000
 JWT_SECRET=your-very-long-random-secret-here
 DB_PATH=/data/hallpass.db
 ```
 
-## Usage
+---
 
-### Admin
-1. Log in with admin credentials
-2. **Users tab** — create teacher and student accounts
-3. **Locations tab** — add locations (bathrooms, library, nurse, etc.) and set max occupancy
-4. **Dashboard** — see all active passes and location occupancy in real-time
-5. **Reports tab** — filter pass history by date, student, teacher, or status
+## Frontend Option 1 — React
 
-### Teacher
-1. Log in with your teacher account
-2. **Issue Pass tab** — select a student and destination, issue a hall pass
-3. **Active Passes tab** — view, return, or expire passes in your class
-4. **History tab** — review your pass history
+Switch to the React branch, install dependencies, and start the dev server:
 
-### Student
-1. Log in with your student account
-2. View your active pass (if any) with timer and destination
-3. Click **"I've Returned to Class"** when back
+```bash
+git checkout frontend/react
+cd frontend_react
+npm install
+npm run dev          # Vite dev server with proxy → Flask on :5000
+```
+
+Open **http://localhost:5173** in your browser.
+
+To build for production (output goes to `public/`, served by Flask):
+
+```bash
+npm run build
+# Then run the Flask backend — it will serve the built SPA
+python -m backend.run
+```
+
+---
+
+## Frontend Option 2 — Flet
+
+Switch to the Flet branch and run the Python desktop/web UI:
+
+```bash
+git checkout frontend/flet
+pip install -r frontend_flet/requirements.txt
+
+# Desktop window:
+python frontend_flet/main.py
+
+# Browser:
+flet run frontend_flet/main.py --web
+```
+
+Point to a different backend server:
+
+```bash
+HALLPASS_API=http://my-server:5000 python frontend_flet/main.py
+```
+
+---
+
+## Running Tests
+
+```bash
+pip install -r backend/requirements.txt
+python -m pytest tests/ -v
+```
+
+---
 
 ## API
 
@@ -83,14 +142,14 @@ All endpoints (except `/api/auth/login`) require a `Bearer <token>` header.
 | Method | Endpoint | Role | Description |
 |---|---|---|---|
 | `POST` | `/api/auth/login` | Any | Authenticate and get a JWT |
-| `POST` | `/api/auth/register` | Any | Self-register (open — restrict in production) |
+| `POST` | `/api/auth/register` | Any | Self-register |
 | `GET` | `/api/passes` | Any | List passes (role-scoped) |
 | `GET` | `/api/passes/active` | Admin/Teacher | All currently active passes |
 | `POST` | `/api/passes` | Admin/Teacher | Issue a new pass |
 | `PATCH` | `/api/passes/:id/return` | Any | Mark pass returned |
 | `PATCH` | `/api/passes/:id/expire` | Admin/Teacher | Mark pass expired |
 | `GET` | `/api/passes/stats` | Admin/Teacher | Summary statistics |
-| `GET` | `/api/locations` | Any | List locations with occupancy |
+| `GET` | `/api/locations` | Any (auth) | List locations with occupancy |
 | `POST` | `/api/locations` | Admin | Add location |
 | `PATCH` | `/api/locations/:id` | Admin | Edit location |
 | `GET` | `/api/admin/users` | Admin | List all users |
@@ -98,20 +157,36 @@ All endpoints (except `/api/auth/login`) require a `Bearer <token>` header.
 | `PATCH` | `/api/admin/users/:id` | Admin | Update user |
 | `DELETE` | `/api/admin/users/:id` | Admin | Delete user |
 | `GET` | `/api/admin/report` | Admin | Filtered pass history |
+| `GET` | `/api/users/students` | Admin/Teacher | List student accounts |
+| `GET` | `/api/health` | Public | Health check |
 
-## Running Tests
+---
+
+## Creating the Frontend Branches
+
+After merging this PR, run the helper script to create the two frontend branches:
 
 ```bash
-npm test
+# Create the React-focused branch
+git checkout -b frontend/react
+git push -u origin frontend/react
+
+# Create the Flet-focused branch (from the same base)
+git checkout main   # or the base branch
+git checkout -b frontend/flet
+git push -u origin frontend/flet
 ```
+
+Both branches contain the full Flask backend plus their respective frontend.
+
+---
 
 ## Tech Stack
 
-- **Backend:** Node.js + Express 5
-- **Database:** SQLite (via [better-sqlite3](https://github.com/WiseLibs/better-sqlite3))
-- **Auth:** JWT (via [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken))
-- **Frontend:** Vanilla HTML/CSS/JS (no build step)
-- **Tests:** Jest + Supertest
+- **Backend:** Python 3.10+ · Flask 3 · SQLite (stdlib `sqlite3`) · PyJWT · bcrypt · flask-limiter
+- **Frontend (React branch):** React 18 · Vite 5
+- **Frontend (Flet branch):** Flet · requests
+- **Tests:** pytest
 
 ## License
 
